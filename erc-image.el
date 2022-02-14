@@ -38,8 +38,9 @@
 ;; version it's doing this synchronously.
 ;;
 ;; The function used to display the image is bound to the variable
-;; `erc-image-display-func'. There are two possible values for that,
-;; `erc-image-insert-inline' and `erc-image-insert-other-buffer'.
+;; `erc-image-display-func'. There are three possible values for that,
+;; `erc-image-insert-inline', `erc-image-insert-inline-keep-on-screen',
+;; and `erc-image-insert-other-buffer'.
 ;;
 ;; Set the value of erc-image-inline-rescale to a number (e.g., 400) or 'window
 ;; to resize images whose height or width exceeds the number, or dimensions
@@ -78,6 +79,7 @@ If several regex match prior occurring have higher priority."
   "Function to use to display the image."
   :group 'erc-image
   :type '(choice (const :tag "Inline" 'erc-image-insert-inline)
+                 (const :tag "Inline (Keep on screen if possible)" 'erc-image-insert-inline-keep-on-screen)
                  (const :tag "Other buffer" 'erc-image-insert-other-buffer)
                  function))
 
@@ -140,6 +142,13 @@ If several regex match prior occurring have higher priority."
                 (define-key map [mouse-2] animate)
                 (define-key map (kbd "RET") animate)))
             (put-text-property pt-before (point) 'read-only t)))))))
+
+(defun erc-image-insert-inline-keep-on-screen (status file-name marker)
+  "Open file-name image in the marker position, and try to keep the image on screen"
+  (erc-image-insert-inline status file-name marker)
+  (with-current-buffer (marker-buffer marker)
+    (recenter-top-bottom 'bottom)
+    (scroll-down-line)))
 
 (defun erc-image-create-image (file-name)
   "Create an image suitably scaled according to the setting of
